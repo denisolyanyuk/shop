@@ -11,19 +11,26 @@
     {% endblock %}
 </head>
 <body>
-	<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-	  <a class="navbar-brand" href="{% url 'store' %}">Ecom</a>
-	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-	    <span class="navbar-toggler-icon"></span>
-	  </button>
+	<nav class="navbar navbar-dark bg-primary">
+    <div class="justify-content-start">
+        <a class="navbar-brand" href="{% url 'store' %}">Ecom</a>
+        {% if user.is_staff %}
+	        <a class="navbar-brand" href="{% url 'admin:index' %}">Admin</a>
+        {% endif %}
+    </div>
 
-	  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-	    <ul class="navbar-nav mr-auto">
-	      <li class="nav-item active">
-	        <a class="nav-link" href="{% url 'store' %}">Store <span class="sr-only">(current)</span></a>
-	      </li>
 
-	    </ul>
+{#	    <ul class="navbar-nav mr-auto">#}
+{#	      <li class="nav-item active">#}
+{#	        <a class="nav-link" href="{% url 'store' %}">Store <span class="sr-only">(current)</span></a>#}
+{#	      </li>#}
+{##}
+{#            {% if user.is_staff %}#}
+{#          <li class="nav-item active">#}
+{#	        <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>#}
+{#	      </li>#}
+{#            {% endif %}#}
+{#	    </ul>#}
 	    <div class="form-inline my-2 my-lg-0">
 	     	<a href="#" class="btn btn-warning">Login</a>
 
@@ -33,7 +40,7 @@
 	    	<p id="cart-total">0</p>
 
 	    </div>
-	  </div>
+
 	</nav>
     <div class="container">
         {% block body %}
