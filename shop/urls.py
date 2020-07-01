@@ -18,8 +18,6 @@ from django.urls import path, include
 from store import views as store_views
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('cart', store_views.cart, name='cart'),
-    path('checkout', store_views.checkout, name='checkout'),
     path('', include('store.urls')),
 
 ]

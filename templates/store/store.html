@@ -1,22 +1,21 @@
 {% extends 'store/base.html' %}
 {% load static %}
+{% load mathfilters %}
 {% block title %}Store{% endblock %}
 {% block body %}
     <div class="row">
-        <div class="col col-lg-4">
-            <img class="thumbnail" src="{% static 'images/2+placeholder.png' %}" alt="Image of the product">
-            <div class="box-element product"></div>
-            <h6><strong>Product</strong></h6>
-        </div>
-        <div class="col col-lg-4">
-            <img class="thumbnail" src="{% static 'images/2+placeholder.png' %}" alt="Image of the product">
-            <div class="box-element product"></div>
-            <h6><strong>Product</strong></h6>
-        </div>
-        <div class="col col-lg-4">
-            <img class="thumbnail" src="{% static 'images/2+placeholder.png' %}" alt="Image of the product">
-            <div class="box-element product"></div>
-            <h6><strong>Product</strong></h6>
-        </div>
+        {% for product in products %}
+            <div class="col col-lg-4">
+                <img class="thumbnail" src="{% static 'images' %}/{{ product.main_image.url}}" alt="Image of the product">
+                <div class="box-element product">
+                    <h6><strong>{{ product.title }}</strong></h6>
+                    <hr>
+                    <button data-product="{{product.id}}" data-action="add" class="btn btn-outline-secondary add-btn update-cart">Add to Cart</button>
+                    <a class="btn btn-outline-success" href="{% url 'product_details' SKU=product.SKU%}">View</a>
+                    <h4 style="display: inline-block; float: right"><strong>${{product.price|div:100|floatformat:2}}</strong></h4>
+                </div>
+
+            </div>
+        {% endfor %}
     </div>
 {% endblock %}

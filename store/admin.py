@@ -1,14 +1,14 @@
 from django.contrib import admin
-from .models import Item, ItemImages, Order, OrderItem
+from .models import Product, ProductImages, Order, OrderItem
 
 
-@admin.register(Item)
-class ItemAdmin(admin.ModelAdmin):
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(ItemImages)
-class ItemImagesAdmin(admin.ModelAdmin):
+@admin.register(ProductImages)
+class ProductImagesAdmin(admin.ModelAdmin):
     pass
 
 @admin.register(Order)

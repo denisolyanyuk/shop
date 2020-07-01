@@ -1,22 +1,31 @@
+import os
+
 from users.models import User
 from django.db import models
 
 # Create your models here.
 
-
-class Item(models.Model):
-    price = models.PositiveSmallIntegerField()
-    main_image = models.ImageField()
-    title = models.CharField(max_length=50)
-
-
 def get_image_subdirectory_for_item_images(instance, filename) -> str:
-    return f'{instance.item.title}/{filename}'
+    return os.path.join(instance.SKU, filename)
 
 
-class ItemImages(models.Model):
+class Product(models.Model):
+    price = models.PositiveSmallIntegerField()
+    main_image = models.ImageField(upload_to=get_image_subdirectory_for_item_images)
+    title = models.CharField(max_length=50)
+    SKU = models.CharField(max_length=20, unique=True)
+
+    @property
+    def main_image_url(self):
+        try:
+            url = self.main_image.url
+        except Exception:
+            url = ""
+        return url
+
+class ProductImages(models.Model):
     image = models.ImageField(upload_to=get_image_subdirectory_for_item_images)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="secondary_images")
+    item = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="secondary_images")
 
 
 class Order(models.Model):

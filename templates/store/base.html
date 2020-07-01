@@ -14,23 +14,12 @@
 	<nav class="navbar navbar-dark bg-primary">
     <div class="justify-content-start">
         <a class="navbar-brand" href="{% url 'store' %}">Ecom</a>
-        {% if user.is_staff %}
+        {% if user.is_authenticated and user.is_staff %}
 	        <a class="navbar-brand" href="{% url 'admin:index' %}">Admin</a>
         {% endif %}
     </div>
 
 
-{#	    <ul class="navbar-nav mr-auto">#}
-{#	      <li class="nav-item active">#}
-{#	        <a class="nav-link" href="{% url 'store' %}">Store <span class="sr-only">(current)</span></a>#}
-{#	      </li>#}
-{##}
-{#            {% if user.is_staff %}#}
-{#          <li class="nav-item active">#}
-{#	        <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>#}
-{#	      </li>#}
-{#            {% endif %}#}
-{#	    </ul>#}
 	    <div class="form-inline my-2 my-lg-0">
 	     	<a href="#" class="btn btn-warning">Login</a>
 
