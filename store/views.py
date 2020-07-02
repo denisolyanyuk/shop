@@ -1,10 +1,18 @@
 from django.shortcuts import render
 from shop.services.сart import Cart
-from .models import Product
+from .models import Product, Order, OrderItem
 from django.http import Http404
 
+
 def cart(request):
-    context = {}
+    if request.user.is_authenticated:
+        order, created = Order.objects.get_or_create(user=request.user, complete=False)
+        items = order.order_items.all()
+    else:
+        items = []
+    context = {
+        'items': items,
+    }
     return render(request, 'store/cart.html', context)
 
 
