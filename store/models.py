@@ -30,16 +30,34 @@ class ProductImages(models.Model):
     item = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="secondary_images")
 
 
+
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     complete = models.BooleanField(default=False)
     transaction_id = models.CharField(max_length=100, null=True)
+
+    @property
+    def get_cart_total(self):
+        orderitems = self.order_items.all()
+        total = sum([item.get_total for item in orderitems])
+        return total
+
+    @property
+    def get_cart_items(self):
+        orderitems = self.order_items.all()
+        total = sum([item.quantity for item in orderitems])
+        return total
 
 
 class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="order_items", default=None, blank=True)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_items", default=None, blank=True)
     quantity = models.IntegerField(default=0)
+
+    @property
+    def get_total(self):
+        total = self.product.price * self.quantity
+        return total
 
 
 
