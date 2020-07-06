@@ -1,5 +1,6 @@
 import os
 
+
 from users.models import User
 from django.db import models
 
@@ -19,7 +20,8 @@ class Product(models.Model):
     @property
     def main_image_url(self):
         try:
-            url = self.main_image.url
+            url = 'static/images/'+self.main_image.url
+
         except Exception:
             url = ""
         return url
@@ -48,6 +50,11 @@ class Order(models.Model):
         total = sum([item.quantity for item in orderitems])
         return total
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user'], condition=models.Q(complete=False), name='one_non_completed_order')
+        ]
+
 
 class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="order_items", default=None, blank=True)
@@ -60,6 +67,14 @@ class OrderItem(models.Model):
         return total
 
 
+class ShippingAddress(models.Model):
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True)
+    address = models.CharField(max_length=200, null=False)
+    city = models.CharField(max_length=200, null=False)
+    state = models.CharField(max_length=200, null=False)
+    zip_code = models.CharField(max_length=200, null=False)
+    date_added = models.DateTimeField(auto_now_add=True)
 
-
-
+    def __str__(self):
+        return self.address

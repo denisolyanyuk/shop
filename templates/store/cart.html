@@ -34,7 +34,9 @@
 				</div>
 				{% for item in items %}
 				<div class="cart-row">
-					<div style="flex:2"><img class="row-image" src="{% static 'images' %}/{{item.product.main_image.url}}"></div>
+					<div style="flex:2"><img class="row-image" src=" {{item.product.main_image_url}}"></div>
+                    <p>{{item.product.main_image_url}}</p>
+                    <p></p>
 					<div style="flex:2"><p>{{item.product.title}}</p></div>
 					<div style="flex:1"><p>${{item.product.price|div:100|floatformat:2}}</p></div>
 					<div style="flex:1">

@@ -12,7 +12,7 @@ def cart(request):
         # Create empty cart for now for non-logged in user
         items = []
         order = {'get_cart_total': 0, 'get_cart_items': 0, 'shipping': False}
-        cartItems = order['get_cart_items']
+
 
     context = {
         'items': items,
@@ -28,7 +28,18 @@ def store(request):
 
 
 def checkout(request):
-    context = {}
+    if request.user.is_authenticated:
+        order, created = Order.objects.get_or_create(user=request.user, complete=False)
+        items = order.order_items.all()
+    else:
+        # Create empty cart for now for non-logged in user
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0, 'shipping': False}
+
+    context = {
+        'items': items,
+        'order': order,
+    }
     return render(request, 'store/checkout.html', context)
 
 
