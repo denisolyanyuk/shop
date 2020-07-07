@@ -5,7 +5,9 @@
      <div class="row">
 		<div class="col-lg-6">
 			<div class="box-element" id="form-wrapper">
+            {% if not request.user.is_authenticated and order.shipping%}
 				<form id="form">
+                {% if not request.user.is_authenticated %}
 					<div id="user-info">
 						<div class="form-field">
 							<input required class="form-control" type="text" name="name" placeholder="Name..">
@@ -13,10 +15,12 @@
 						<div class="form-field">
 							<input required class="form-control" type="email" name="email" placeholder="Email..">
 						</div>
+                        <hr>
 					</div>
+                {% endif %}
                     {% if order.shipping %}
                         <div id="shipping-info">
-                            <hr>
+
                             <p>Shipping Information:</p>
                             <hr>
                             <div class="form-field">
@@ -29,17 +33,16 @@
                                 <input class="form-control" type="text" name="state" placeholder="State..">
                             </div>
                             <div class="form-field">
-                                <input class="form-control" type="text" name="zipcode" placeholder="Zip code..">
+                                <input class="form-control" type="text" name="zip_code" placeholder="Zip code..">
                             </div>
-                            <div class="form-field">
-                                <input class="form-control" type="text" name="country" placeholder="Zip code..">
-                            </div>
+
                         </div>
                     {% endif %}
 
 					<hr>
 					<input id="form-button" class="btn btn-success btn-block" type="submit" value="Continue">
 				</form>
+            {% endif %}
 			</div>
 
 			<br>
@@ -74,3 +77,7 @@
 
 
 {% endblock body %}
+
+{% block scripts %}
+    <script  src={% static 'JS/checkout.js' %}></script>
+{% endblock scripts %}
