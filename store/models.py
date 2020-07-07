@@ -17,15 +17,6 @@ class Product(models.Model):
     title = models.CharField(max_length=50)
     SKU = models.CharField(max_length=20, unique=True)
 
-    @property
-    def main_image_url(self):
-        try:
-            url = 'static/images/'+self.main_image.url
-
-        except Exception:
-            url = ""
-        return url
-
 
 class ProductImages(models.Model):
     image = models.ImageField(upload_to=get_image_subdirectory_for_item_images)

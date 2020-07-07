@@ -152,14 +152,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
+    os.path.join(BASE_DIR, 'static'),
 ]
 MEDIA_URL = '/images/'
-STATIC_ROOT = "/static/"
-MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images')
-STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-]
+MEDIA_ROOT = os.path.join(BASE_DIR, 'images')
+
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_EMAIL_REQUIRED = True

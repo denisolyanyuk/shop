@@ -27,7 +27,7 @@
                 <a href="{% url 'account_login' %}" class="btn btn-warning">Login</a>
             {% endif %}
 	     	<a href="{% url 'cart' %}">
-	    		<img id="cart-icon" src="{% static 'images/cart.png' %}">
+	    		<img id="cart-icon" src="{% get_media_prefix %}cart.png" alt="cart">
 	    	</a>
 	    	<p id="cart-total">0</p>
 
