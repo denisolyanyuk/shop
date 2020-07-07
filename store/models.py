@@ -12,10 +12,11 @@ def get_image_subdirectory_for_item_images(instance, filename) -> str:
 
 
 class Product(models.Model):
-    price = models.PositiveSmallIntegerField()
+    price = models.DecimalField(decimal_places=2, max_digits=7)
     main_image = models.ImageField(upload_to=get_image_subdirectory_for_item_images)
     title = models.CharField(max_length=50)
     SKU = models.CharField(max_length=20, unique=True)
+    digital = models.BooleanField(default=False)
 
 
 class ProductImages(models.Model):
@@ -40,6 +41,13 @@ class Order(models.Model):
         orderitems = self.order_items.all()
         total = sum([item.quantity for item in orderitems])
         return total
+
+    @property
+    def shipping(self):
+        for item in self.order_items.all():
+            if not item.product.digital:
+                return True
+        return False
 
     class Meta:
         constraints = [

@@ -1,6 +1,5 @@
 {% extends 'store/base.html' %}
 {% load static %}
-{% load mathfilters %}
 {% block title %}Cart{% endblock %}
 {% block body %}
 	<div class="row">
@@ -14,7 +13,7 @@
 				<table class="table">
 					<tr>
 						<th><h5>Items: <strong>{{order.get_cart_items}}</strong></h5></th>
-						<th><h5>Total:<strong> ${{order.get_cart_total|div:100|floatformat:2}}</strong></h5></th>
+						<th><h5>Total:<strong> ${{order.get_cart_total|floatformat:2}}</strong></h5></th>
 						<th>
 							<a  style="float:right; margin:5px;" class="btn btn-success" href="{% url 'checkout' %}">Checkout</a>
 						</th>
@@ -38,19 +37,23 @@
                     <p>{{item.product.main_image_url}}</p>
                     <p></p>
 					<div style="flex:2"><p>{{item.product.title}}</p></div>
-					<div style="flex:1"><p>${{item.product.price|div:100|floatformat:2}}</p></div>
+					<div style="flex:1"><p>${{item.product.price|floatformat:2}}</p></div>
 					<div style="flex:1">
 						<p class="quantity">{{item.quantity}}</p>
 						<div class="quantity">
-							<img data-product="{{item.product.id}}" data-action="add" class="chg-quantity update-cart" src="{% get_media_prefix %}arrow-up.png">
+							<img data-SKU="{{item.product.SKU}}" data-action="add" class="chg-quantity update-cart" src="{% get_media_prefix %}arrow-up.png">
 
-							<img data-product="{{item.product.id}}" data-action="remove" class="chg-quantity update-cart" src="{% get_media_prefix %}arrow-down.png">
+							<img data-SKU="{{item.product.SKU}}" data-action="remove" class="chg-quantity update-cart" src="{% get_media_prefix %}arrow-down.png">
 						</div>
 					</div>
-					<div style="flex:1"><p>${{item.get_total|div:100|floatformat:2}}</p></div>
+					<div style="flex:1"><p>${{item.get_total|floatformat:2}}</p></div>
 				</div>
 				{% endfor %}
 			</div>
 		</div>
 	</div>
+{% endblock %}
+
+{% block scripts %}
+    <script  src={% static 'JS/add_or_remove_item_to_cart.js' %}></script>
 {% endblock %}
