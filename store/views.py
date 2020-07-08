@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from shop.services.сart import Cart
 from .models import Product, Order, OrderItem
-from django.http import Http404
+from django.http import Http404, HttpResponseServerError, HttpResponseBadRequest
 from django.http import JsonResponse
-import json
+import json, datetime
 
 
 def cart(request):
@@ -73,6 +73,17 @@ def update_item(request):
     if order_item.quantity <= 0:
         order_item.delete()
     return JsonResponse('item was added', safe=False)
+
+
+def process_order(request):
+    data = json.loads(request.body)
+    transaction_id = datetime.datetime.now().timestamp()
+
+    if request.user.is_authenticated:
+        order, created = Order.objects.get_or_create(user=request.user, complete=False)
+        order.transaction_id = transaction_id
+        return JsonResponse({'status':'false','message': 'total price is incorrect'}, status=500)
+    return JsonResponse('order completed', safe=False)
 
 
 def product_details(request, SKU=False):
