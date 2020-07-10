@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from shop.services.сart import Cart
-from .models import Product, Order, OrderItem
+from .models import Product, Order, OrderItem, ShippingAddress
 from django.http import Http404, HttpResponseServerError, HttpResponseBadRequest
 from django.http import JsonResponse
 import json, datetime
 
 
 def cart(request):
+    cart = Cart(request)
     if request.user.is_authenticated:
         order, created = Order.objects.get_or_create(user=request.user, complete=False)
         items = order.order_items.all()
@@ -53,7 +54,6 @@ def checkout(request):
         'items': items,
         'order': order,
     }
-    print(order.shipping)
     return render(request, 'store/checkout.html', context)
 
 
@@ -77,12 +77,26 @@ def update_item(request):
 
 def process_order(request):
     data = json.loads(request.body)
+    print(data)
     transaction_id = datetime.datetime.now().timestamp()
 
     if request.user.is_authenticated:
         order, created = Order.objects.get_or_create(user=request.user, complete=False)
         order.transaction_id = transaction_id
-        return JsonResponse({'status':'false','message': 'total price is incorrect'}, status=500)
+        if float(data['total']) != order.get_cart_total:
+            return JsonResponse({'message': 'total price is incorrect'}, status=500)
+        order.complete = True
+        order.save()
+
+        if order.shipping == True:
+            ShippingAddress.objects.create(
+                customer=request.user,
+                order=order,
+                address=data['address'],
+                city=data['city'],
+                state=data['state'],
+                zip_code=data['zip_code'],
+            )
     return JsonResponse('order completed', safe=False)
 
 

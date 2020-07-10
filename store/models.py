@@ -54,6 +54,9 @@ class Order(models.Model):
             models.UniqueConstraint(fields=['user'], condition=models.Q(complete=False), name='one_non_completed_order')
         ]
 
+    def __int__(self):
+        return 42
+
 
 class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="order_items", default=None, blank=True)

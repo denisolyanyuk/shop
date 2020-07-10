@@ -7,6 +7,7 @@
 			<div class="box-element {% if request.user.is_authenticated and not order.shipping %}hidden{% endif %}" id="form-wrapper">
 				<form id="form" >
                     {% if not request.user.is_authenticated %}
+
                         <div id="user-info" class="hidden">
                             <div class="form-field">
                                 <input required class="form-control" type="text" name="name" placeholder="Name..">
@@ -66,8 +67,9 @@
                 <p>{{item.product.main_image_url}}</p>
 				</div>
 				{% endfor %}
-				<h5>Items:   {{order.get_cart_items}}</h5>
-				<h5>Total:   ${{order.get_cart_total|floatformat:2}}</h5>
+				<h5>Items:   <span id="items">{{order.get_cart_items}}</span></h5>
+
+				<h5>Total: $<span id="total">{{order.get_cart_total|floatformat:2}}</span></h5>
 			</div>
 		</div>
 	</div>
