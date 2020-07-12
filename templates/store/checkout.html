@@ -4,7 +4,7 @@
 {% block body %}
      <div class="row">
 		<div class="col-lg-6">
-			<div class="box-element {% if request.user.is_authenticated and not order.shipping %}hidden{% endif %}" id="form-wrapper">
+			<div class="box-element {% if request.user.is_authenticated and not cart.has_to_be_shipped %}hidden{% endif %}" id="form-wrapper">
 				<form id="form" >
                     {% if not request.user.is_authenticated %}
 
@@ -44,7 +44,7 @@
 			</div>
 
 			<br>
-			<div class="box-element {% if not request.user.is_authenticated or order.shipping %} hidden {% endif %}" id="payment-info">
+			<div class="box-element {% if not request.user.is_authenticated or cart.has_to_be_shipped %} hidden {% endif %}" id="payment-info">
 				<small>Paypal Options</small>
 				<button id="make-payment">Make payment</button>
 			</div>
@@ -57,19 +57,19 @@
 				<hr>
 				<h3>Order Summary</h3>
 				<hr>
-				{% for item in items %}
+				{% for item in cart.get_items %}
 				<div class="cart-row">
 					<div style="flex:2"><img class="row-image" src="{{item.product.main_image.url}}"></div>
 
-					<div style="flex:2"><p>{{item.product.name}}</p></div>
+					<div style="flex:2"><p>{{item.product.title}}</p></div>
 					<div style="flex:1"><p>${{item.product.price|floatformat:2}}</p></div>
 					<div style="flex:1"><p>x{{item.quantity}}</p></div>
                 <p>{{item.product.main_image_url}}</p>
 				</div>
 				{% endfor %}
-				<h5>Items:   <span id="items">{{order.get_cart_items}}</span></h5>
+				<h5>Items:   <span id="items">{{cart.get_amount_of_items}}</span></h5>
 
-				<h5>Total: $<span id="total">{{order.get_cart_total|floatformat:2}}</span></h5>
+				<h5>Total: $<span id="total">{{cart.get_total_price|floatformat:2}}</span></h5>
 			</div>
 		</div>
 	</div>

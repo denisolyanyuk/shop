@@ -15,9 +15,8 @@ async function processOrder() {
     const url = `${location.protocol}//${location.host}/process_order/`;
     const csrftoken = getCookie('csrftoken');
     const form = document.getElementById('form');
-    let data = Object.fromEntries(new FormData(form).entries());
+    let user_info = Object.fromEntries(new FormData(form).entries());
     data['total'] = document.getElementById('total').textContent
-    data['items'] = document.getElementById('items').textContent
     console.log(data)
     const response = await fetch(url, {
         method:'POST',
@@ -25,7 +24,7 @@ async function processOrder() {
             'Content-Type': 'application/json',
             'X-CSRFToken':csrftoken,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(user_info),
     })
     data = await response.json()
     if (!response.ok) {

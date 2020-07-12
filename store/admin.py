@@ -1,20 +1,20 @@
 from django.contrib import admin
-from .models import Product, ProductImages, Order, OrderItem
+from .models import ProductModel, ProductImagesModel, OrderModel, OrderItemModel
 
 
-@admin.register(Product)
+@admin.register(ProductModel)
 class ProductAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(ProductImages)
+@admin.register(ProductImagesModel)
 class ProductImagesAdmin(admin.ModelAdmin):
     pass
 
-@admin.register(Order)
+@admin.register(OrderModel)
 class OrderAdmin(admin.ModelAdmin):
     pass
 
-@admin.register(OrderItem)
+@admin.register(OrderItemModel)
 class OrderItemAdmin(admin.ModelAdmin):
     pass
