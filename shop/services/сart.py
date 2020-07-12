@@ -25,6 +25,7 @@ class CartItem:
 
 
 class BaseCartStorage(ABC):
+
     @abstractmethod
     def get_items(self):
         pass
@@ -42,7 +43,7 @@ class BaseCartStorage(ABC):
                 return True
         return False
 
-    
+
 class CookiesCartStorage(BaseCartStorage):
     def __init__(self, cookies):
         if 'cart' in cookies:

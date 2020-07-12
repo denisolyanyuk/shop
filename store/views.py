@@ -1,10 +1,8 @@
 from django.shortcuts import render
 from shop.services.сart import Cart, Products, Order
-from .models import ProductModel, OrderModel, OrderItemModel, ShippingAddressModel
 from django.http import Http404, HttpResponseServerError, HttpResponseBadRequest
 from django.http import JsonResponse
 import json
-import datetime
 
 
 def cart(request):
@@ -49,17 +47,17 @@ def update_item(request):
 
 def process_order(request):
     data = json.loads(request.body)
-    cart = Cart(user=request.user, cookies=request.COOKIES)
+    cart: Cart = Cart(user=request.user, cookies=request.COOKIES)
     if float(data['total']) != cart.get_total_price():
         return JsonResponse({'message': 'total price is incorrect'}, status=500)
     Order.create_order(user=request.user, cart=cart, data_from_form=data)
     return JsonResponse('order completed', safe=False)
 
 
-def product_details(request, sku=False):
-    if not sku:
+def product_details(request, sku=''):
+    if sku == '':
         raise Http404("Product does not exist")
     context = {
-        "product": ProductModel.objects.get(SKU=sku)
+        "product": Products.get_by_sku(sku=sku)
     }
     return render(request, 'store/product_details.html', context)
