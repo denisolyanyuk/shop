@@ -1,5 +1,7 @@
 from django.shortcuts import render
-from shop.services.сart import Cart, Products, Order
+from shop.services.сart import Cart
+from shop.services.order import Order
+from shop.services.product import ProductFactory
 from django.http import Http404, HttpResponseServerError, HttpResponseBadRequest
 from django.http import JsonResponse
 import json
@@ -14,8 +16,8 @@ def cart(request):
 
 
 def store(request):
-    cart = Cart(user=request.user, cookies=request.COOKIES)
-    products = Products.get_all()
+    cart = Cart(user=request.user, request=request)
+    products = ProductFactory.get_all()
     context = {
         'cart': cart,
         'products': products,
@@ -24,7 +26,7 @@ def store(request):
 
 
 def checkout(request):
-    cart = Cart(user=request.user, cookies=request.COOKIES)
+    cart = Cart(user=request.user, request=request)
     context = {
         'cart': cart,
     }
@@ -35,7 +37,7 @@ def update_item(request):
     data = json.loads(request.body)
     SKU = data['SKU']
     action = data['action']
-    cart = Cart(user=request.user, cookies=request.COOKIES)
+    cart = Cart(user=request.user, request=request)
 
     if action == 'add':
         cart.add_item(SKU)
@@ -47,7 +49,7 @@ def update_item(request):
 
 def process_order(request):
     data = json.loads(request.body)
-    cart: Cart = Cart(user=request.user, cookies=request.COOKIES)
+    cart = Cart(user=request.user, request=request)
     if float(data['total']) != cart.get_total_price():
         return JsonResponse({'message': 'total price is incorrect'}, status=500)
     Order.create_order(user=request.user, cart=cart, data_from_form=data)
@@ -58,6 +60,6 @@ def product_details(request, sku=''):
     if sku == '':
         raise Http404("Product does not exist")
     context = {
-        "product": Products.get_by_sku(sku=sku)
+        "product": ProductFactory.get_product_by_sku(sku=sku)
     }
     return render(request, 'store/product_details.html', context)

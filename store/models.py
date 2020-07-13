@@ -17,7 +17,7 @@ class ProductModel(models.Model):
     main_image = models.ImageField(upload_to=get_image_subdirectory_for_item_images)
     title = models.CharField(max_length=50)
     SKU = models.CharField(max_length=20, unique=True)
-    digital = models.BooleanField(default=False)
+    is_digital = models.BooleanField(default=False)
 
 
 class ProductImagesModel(models.Model):

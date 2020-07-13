@@ -1,21 +1,11 @@
-import datetime
 from abc import ABC, abstractmethod
-from store.models import ProductModel, OrderModel, OrderItemModel, CartModel, CartItemModel, ShippingAddressModel
+from store.models import CartModel, CartItemModel
 from users.models import User
-
-
-class Products:
-    @staticmethod
-    def get_by_sku(sku: str):
-        return ProductModel.objects.get(SKU=sku)
-
-    @staticmethod
-    def get_all():
-        return ProductModel.objects.all()
+from .product import ProductFactory, Product
 
 
 class CartItem:
-    def __init__(self, product: ProductModel, quantity: int, price: float):
+    def __init__(self, product: Product, quantity: int, price: float):
         self.product = product
         self.quantity = quantity
         self.price = price
@@ -30,6 +20,14 @@ class BaseCartStorage(ABC):
     def get_items(self):
         pass
 
+    @abstractmethod
+    def add_item(self, sku: str):
+        pass
+
+    @abstractmethod
+    def remove_item(self, sku: str):
+        pass
+
     def get_total_price(self) -> float:
         return sum([item.get_total() for item in self.get_items()])
 
@@ -37,24 +35,23 @@ class BaseCartStorage(ABC):
         return sum([item.quantity for item in self.get_items()])
 
     @property
-    def has_to_be_shipped(self):
+    def has_to_be_shipped(self) -> bool:
         for item in self.get_items():
-            if not item.product.digital:
+            if not item.product.is_digital:
                 return True
         return False
 
 
 class CookiesCartStorage(BaseCartStorage):
-    def __init__(self, cookies):
-        if 'cart' in cookies:
-            self._storage = cookies['cart']
-        else:
-            self._storage = {}
+    def __init__(self, request):
+        if 'cart' not in request.COOKIES:
+            request.COOKIES['cart'] = {}
+        self._request = request
 
     def get_items(self):
         result = {}
-        for item in self._storage:
-            product = Products.get_by_sku(item['sku'])
+        for item in self._request.COOKIES['cart']:
+            product = ProductFactory.get_product_by_sku(item['sku'])
             self._storage[item['sku']] = CartItem(
                 product=product,
                 price=product.price,
@@ -66,12 +63,7 @@ class CookiesCartStorage(BaseCartStorage):
         if sku in self._storage:
             self._storage[sku] = int(self._storage[sku]['quantity']) + 1
         else:
-            product = Products.get_by_sku(sku)
-            self._storage[sku] = CartItem(
-                product=product,
-                price=product.price,
-                quantity=1
-            )
+            self._storage[sku] = 1
 
     def remove_item(self, sku: str):
         if int(self._storage[sku]['quantity']) > 1:
@@ -102,7 +94,7 @@ class DBCartStorage(BaseCartStorage):
             for model in self._cart_model.cart_items.all()}
 
     def add_item(self, sku: str):
-        product = Products.get_by_sku(sku=sku)
+        product = ProductFactory.get_product_by_sku(sku=sku)
         cart_item, created = CartItemModel.objects.get_or_create(product=product,
                                                                  cart=self._cart_model,
                                                                  price=product.price)
@@ -110,7 +102,7 @@ class DBCartStorage(BaseCartStorage):
         cart_item.save()
 
     def remove_item(self, sku: str):
-        product = Products.get_by_sku(sku=sku)
+        product = ProductFactory.get_product_by_sku(sku=sku)
         cart_item, created = CartItemModel.objects.get_or_create(product=product, cart=self._cart_model)
         if cart_item.quantity <= 1:
             cart_item.delete()
@@ -119,7 +111,7 @@ class DBCartStorage(BaseCartStorage):
             cart_item.save()
 
     def set_amount_of_items(self, sku: str, amount: int):
-        product = Products.get_by_sku(sku=sku)
+        product = ProductFactory.get_product_by_sku(sku=sku)
         cart_item, created = CartItemModel.objects.get_or_create(product=product, cart=self._cart_model)
         if amount <= 0:
             cart_item.delete()
@@ -132,11 +124,11 @@ class DBCartStorage(BaseCartStorage):
 
 
 class Cart:
-    def __init__(self, user, cookies):
+    def __init__(self, user: User, request: dict):
         if user.is_authenticated:
             self._storage = DBCartStorage(user)
         else:
-            self._storage = CookiesCartStorage(cookies)
+            self._storage = CookiesCartStorage(request)
 
     def add_item(self, sku: str):
         self._storage.add_item(sku)
@@ -164,24 +156,5 @@ class Cart:
         self._storage.clear()
 
 
-class Order:
-    @staticmethod
-    def create_order(cart: Cart, user: User, data_from_form: dict):
-        transaction_id = datetime.datetime.now().timestamp()
-        order = OrderModel.objects.create(user=user, transaction_id=transaction_id, date_time=datetime.datetime.now())
-        for cart_item in cart.get_items():
-            OrderItemModel.objects.create(product=cart_item.product,
-                                          order=order,
-                                          quantity=cart_item.quantity,
-                                          price=cart_item.price)
-        if cart.has_to_be_shipped:
-            ShippingAddressModel.objects.create(
-                customer=user,
-                order=order,
-                address=data_from_form['address'],
-                city=data_from_form['city'],
-                state=data_from_form['state'],
-                zip_code=data_from_form['zip_code'],
-            )
-        cart.clear()
+
 
