@@ -8,7 +8,7 @@ import json
 
 
 def cart(request):
-    cart = Cart(request.user, request.COOKIES)
+    cart = Cart(request.user, session=request.session)
     context = {
         'cart': cart
     }
@@ -16,7 +16,7 @@ def cart(request):
 
 
 def store(request):
-    cart = Cart(user=request.user, request=request)
+    cart = Cart(user=request.user, session=request.session)
     products = ProductFactory.get_all()
     context = {
         'cart': cart,
@@ -26,7 +26,7 @@ def store(request):
 
 
 def checkout(request):
-    cart = Cart(user=request.user, request=request)
+    cart = Cart(user=request.user, session=request.session)
     context = {
         'cart': cart,
     }
@@ -37,7 +37,7 @@ def update_item(request):
     data = json.loads(request.body)
     SKU = data['SKU']
     action = data['action']
-    cart = Cart(user=request.user, request=request)
+    cart = Cart(user=request.user, session=request.session)
 
     if action == 'add':
         cart.add_item(SKU)
@@ -49,7 +49,7 @@ def update_item(request):
 
 def process_order(request):
     data = json.loads(request.body)
-    cart = Cart(user=request.user, request=request)
+    cart = Cart(user=request.user, session=request.session)
     if float(data['total']) != cart.get_total_price():
         return JsonResponse({'message': 'total price is incorrect'}, status=500)
     Order.create_order(user=request.user, cart=cart, data_from_form=data)
@@ -57,9 +57,11 @@ def process_order(request):
 
 
 def product_details(request, sku=''):
+    cart = Cart(user=request.user, session=request.session)
     if sku == '':
         raise Http404("Product does not exist")
     context = {
-        "product": ProductFactory.get_product_by_sku(sku=sku)
+        'product': ProductFactory.get_product_by_sku(sku=sku),
+        'cart': cart,
     }
     return render(request, 'store/product_details.html', context)

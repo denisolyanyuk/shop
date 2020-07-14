@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from store.models import CartModel, CartItemModel
 from users.models import User
 from .product import ProductFactory, Product
+from django.contrib.sessions.backends.db import SessionBase
 
 
 class CartItem:
@@ -17,7 +18,7 @@ class CartItem:
 class BaseCartStorage(ABC):
 
     @abstractmethod
-    def get_items(self):
+    def get_items(self) -> dict:
         pass
 
     @abstractmethod
@@ -29,10 +30,10 @@ class BaseCartStorage(ABC):
         pass
 
     def get_total_price(self) -> float:
-        return sum([item.get_total() for item in self.get_items()])
+        return sum([item.get_total() for sku, item in self.get_items().items()])
 
     def get_amount_of_items(self) -> float:
-        return sum([item.quantity for item in self.get_items()])
+        return sum([item.quantity for sku, item in self.get_items().items()])
 
     @property
     def has_to_be_shipped(self) -> bool:
@@ -42,17 +43,19 @@ class BaseCartStorage(ABC):
         return False
 
 
-class CookiesCartStorage(BaseCartStorage):
-    def __init__(self, request):
-        if 'cart' not in request.COOKIES:
-            request.COOKIES['cart'] = {}
-        self._request = request
+class SessionCartStorage(BaseCartStorage):
+    def __init__(self, session: SessionBase):
+        if 'cart' not in session:
+            session['cart'] = {}
+            session.save()
+        self._storage = session['cart']
+        self._session = session
 
-    def get_items(self):
+    def get_items(self) -> dict:
         result = {}
-        for item in self._request.COOKIES['cart']:
-            product = ProductFactory.get_product_by_sku(item['sku'])
-            self._storage[item['sku']] = CartItem(
+        for sku, item in self._storage.items():
+            product = ProductFactory.get_product_by_sku(sku)
+            result[sku] = CartItem(
                 product=product,
                 price=product.price,
                 quantity=item['quantity']
@@ -61,24 +64,27 @@ class CookiesCartStorage(BaseCartStorage):
 
     def add_item(self, sku: str):
         if sku in self._storage:
-            self._storage[sku] = int(self._storage[sku]['quantity']) + 1
+            self._storage[sku]['quantity'] = int(self._storage[sku]['quantity']) + 1
         else:
-            self._storage[sku] = 1
+            self._storage[sku] = {'quantity': 1}
+        self._session.save()
 
     def remove_item(self, sku: str):
         if int(self._storage[sku]['quantity']) > 1:
             self._storage[sku]['quantity'] = int(self._storage[sku]['quantity']) - 1
         else:
             self._storage.pop(sku)
+        self._session.save()
 
     def set_amount_of_items(self, sku: str, amount: int):
         if amount < 1:
             self._storage.pop(sku)
         else:
-            self._storage[sku]['quantity'] = amount
+            self._storage[sku] = {'quantity': amount}
+        self._session.save()
 
     def clear(self):
-        self._storage = {}
+        self._session['cart'] = {}
 
 
 class DBCartStorage(BaseCartStorage):
@@ -86,7 +92,7 @@ class DBCartStorage(BaseCartStorage):
         self._cart_model, created = CartModel.objects.get_or_create(user=user)
         self._user = user
 
-    def get_items(self):
+    def get_items(self) -> dict:
         return {model.product.SKU: CartItem(
             product=model.product,
             price=model.price,
@@ -103,7 +109,7 @@ class DBCartStorage(BaseCartStorage):
 
     def remove_item(self, sku: str):
         product = ProductFactory.get_product_by_sku(sku=sku)
-        cart_item, created = CartItemModel.objects.get_or_create(product=product, cart=self._cart_model)
+        cart_item, created = CartItemModel.objects.get_or_create(product=product, cart=self._cart_model, price=product.price)
         if cart_item.quantity <= 1:
             cart_item.delete()
         else:
@@ -112,7 +118,7 @@ class DBCartStorage(BaseCartStorage):
 
     def set_amount_of_items(self, sku: str, amount: int):
         product = ProductFactory.get_product_by_sku(sku=sku)
-        cart_item, created = CartItemModel.objects.get_or_create(product=product, cart=self._cart_model)
+        cart_item, created = CartItemModel.objects.get_or_create(product=product, cart=self._cart_model, price=product.price)
         if amount <= 0:
             cart_item.delete()
         else:
@@ -124,11 +130,16 @@ class DBCartStorage(BaseCartStorage):
 
 
 class Cart:
-    def __init__(self, user: User, request: dict):
+    def __init__(self, user: User, session: SessionBase):
         if user.is_authenticated:
             self._storage = DBCartStorage(user)
+            if 'cart' in session and len(session['cart']) != 0:
+                session_cart = SessionCartStorage(session)
+                for sku, item in session_cart.get_items().items():
+                    self._storage.set_amount_of_items(sku, item.quantity)
+                session_cart.clear()
         else:
-            self._storage = CookiesCartStorage(request)
+            self._storage = SessionCartStorage(session)
 
     def add_item(self, sku: str):
         self._storage.add_item(sku)

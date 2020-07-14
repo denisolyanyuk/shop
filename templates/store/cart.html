@@ -31,7 +31,7 @@
 					<div style="flex:1"><strong>Quantity</strong></div>
 					<div style="flex:1"><strong>Total</strong></div>
 				</div>
-				{% for item in cart.get_items %}
+				{% for sku, item in cart.get_items.items %}
 				<div class="cart-row">
 					<div style="flex:2"><img class="row-image" src=" {{item.product.main_image.url}}"></div>
                     <p>{{item.product.main_image_url}}</p>
