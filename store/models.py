@@ -35,7 +35,7 @@ class OrderItemModel(models.Model):
     product = models.ForeignKey(ProductModel, on_delete=models.SET_NULL, null=True, related_name="order_items", default=None, blank=True)
     order = models.ForeignKey(OrderModel, on_delete=models.CASCADE, related_name="order_items", default=None, blank=True)
     quantity = models.IntegerField(default=0)
-    price = models.DecimalField(decimal_places=2, max_digits=7)
+    price = models.FloatField()
 
 
 class CartModel(models.Model):
