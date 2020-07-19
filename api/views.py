@@ -44,3 +44,8 @@ class CartViewSet(viewsets.ViewSet):
     def add_item(self, request, pk):
         print('here')
         return Response(ProductSerializer(ProductFactory.get_product_by_sku('1')).data)
+
+    @action(detail=False)
+    def clear_cart(self, request):
+        print('here')
+        return Response(ProductSerializer(ProductFactory.get_product_by_sku('1')).data)

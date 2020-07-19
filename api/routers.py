@@ -14,11 +14,20 @@ class CartRouter(SimpleRouter):
             initkwargs={}
         ),
         DynamicRoute(
+            url=r'^{prefix}/{url_path}{trailing_slash}$',
+            name='{basename}-{url_name}',
+            detail=False,
+            initkwargs={}
+        ),
+
+        DynamicRoute(
             url=r'^{prefix}/{url_path}/{lookup}{trailing_slash}$',
             name='{basename}-{url_name}',
             detail=True,
             initkwargs={}
-        )
+        ),
+
+
     ]
 
 
