@@ -16,7 +16,7 @@ class ProductModel(models.Model):
     price = models.FloatField()
     main_image = models.ImageField(upload_to=get_image_subdirectory_for_item_images)
     title = models.CharField(max_length=50)
-    SKU = models.CharField(max_length=20, unique=True)
+    sku = models.CharField(max_length=20, unique=True)
     is_digital = models.BooleanField(default=False)
 
 

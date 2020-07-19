@@ -3,6 +3,7 @@ from store.models import CartModel, CartItemModel
 from users.models import User
 from .product import ProductFactory, Product
 from django.contrib.sessions.backends.db import SessionBase
+from typing import List
 
 
 class CartItem:
@@ -11,14 +12,14 @@ class CartItem:
         self.quantity = quantity
         self.price = price
 
-    def get_total(self):
+    def get_total(self) -> float:
         return self.price * self.quantity
 
 
 class BaseCartStorage(ABC):
 
     @abstractmethod
-    def get_items(self) -> dict:
+    def get_items(self) -> List[CartItem]:
         pass
 
     @abstractmethod
@@ -30,10 +31,10 @@ class BaseCartStorage(ABC):
         pass
 
     def get_total_price(self) -> float:
-        return sum([item.get_total() for sku, item in self.get_items().items()])
+        return sum([item.get_total() for item in self.get_items()])
 
     def get_amount_of_items(self) -> float:
-        return sum([item.quantity for sku, item in self.get_items().items()])
+        return sum([item.quantity for item in self.get_items()])
 
     @property
     def has_to_be_shipped(self) -> bool:
@@ -51,15 +52,15 @@ class SessionCartStorage(BaseCartStorage):
         self._storage = session['cart']
         self._session = session
 
-    def get_items(self) -> dict:
-        result = {}
+    def get_items(self) -> List[CartItem]:
+        result = []
         for sku, item in self._storage.items():
             product = ProductFactory.get_product_by_sku(sku)
-            result[sku] = CartItem(
+            result.append(CartItem(
                 product=product,
                 price=product.price,
                 quantity=item['quantity']
-            )
+            ))
         return result
 
     def add_item(self, sku: str):
@@ -92,12 +93,12 @@ class DBCartStorage(BaseCartStorage):
         self._cart_model, created = CartModel.objects.get_or_create(user=user)
         self._user = user
 
-    def get_items(self) -> dict:
-        return {model.product.SKU: CartItem(
+    def get_items(self) -> List[CartItem]:
+        return [CartItem(
             product=model.product,
             price=model.price,
             quantity=model.quantity)
-            for model in self._cart_model.cart_items.all()}
+            for model in self._cart_model.cart_items.all()]
 
     def add_item(self, sku: str):
         product = ProductFactory.get_product_by_sku(sku=sku)
@@ -135,8 +136,8 @@ class Cart:
             self._storage = DBCartStorage(user)
             if 'cart' in session and len(session['cart']) != 0:
                 session_cart = SessionCartStorage(session)
-                for sku, item in session_cart.get_items().items():
-                    self._storage.set_amount_of_items(sku, item.quantity)
+                for item in session_cart.get_items():
+                    self._storage.set_amount_of_items(item.product.sku, item.quantity)
                 session_cart.clear()
         else:
             self._storage = SessionCartStorage(session)
@@ -150,7 +151,7 @@ class Cart:
     def set_amount_of_items(self, sku: str, amount: int):
         self._storage.set_amount_of_items(sku, amount)
 
-    def get_items(self):
+    def get_items(self) -> List[CartItem]:
         return self._storage.get_items()
 
     def get_total_price(self) -> float:

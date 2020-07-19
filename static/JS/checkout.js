@@ -32,9 +32,6 @@ async function processOrder() {
     } else {
         window.location.href = `${location.protocol}//${location.host}`
     }
-
-
-
 }
 
 

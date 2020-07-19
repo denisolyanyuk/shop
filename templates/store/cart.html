@@ -31,7 +31,7 @@
 					<div style="flex:1"><strong>Quantity</strong></div>
 					<div style="flex:1"><strong>Total</strong></div>
 				</div>
-				{% for sku, item in cart.get_items.items %}
+				{% for  item in cart.get_items %}
 				<div class="cart-row">
 					<div style="flex:2"><img class="row-image" src=" {{item.product.main_image.url}}"></div>
                     <p>{{item.product.main_image_url}}</p>
@@ -41,9 +41,9 @@
 					<div style="flex:1">
 						<p class="quantity">{{item.quantity}}</p>
 						<div class="quantity">
-							<img data-SKU="{{item.product.SKU}}" data-action="add" class="chg-quantity update-cart" src="{% get_media_prefix %}arrow-up.png">
+							<img data-SKU="{{item.product.sku}}" data-action="add" class="chg-quantity update-cart" src="{% get_media_prefix %}arrow-up.png">
 
-							<img data-SKU="{{item.product.SKU}}" data-action="remove" class="chg-quantity update-cart" src="{% get_media_prefix %}arrow-down.png">
+							<img data-SKU="{{item.product.sku}}" data-action="remove" class="chg-quantity update-cart" src="{% get_media_prefix %}arrow-down.png">
 						</div>
 					</div>
 					<div style="flex:1"><p>${{item.get_total|floatformat:2}}</p></div>
