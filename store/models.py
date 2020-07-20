@@ -47,7 +47,6 @@ class CartItemModel(models.Model):
                                 blank=True)
     cart = models.ForeignKey(CartModel, on_delete=models.CASCADE, related_name="cart_items", default=None, blank=True)
     quantity = models.IntegerField(default=0)
-    price = models.FloatField()
 
 
 class ShippingAddressModel(models.Model):

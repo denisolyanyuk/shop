@@ -1,10 +1,8 @@
-from rest_framework.routers import Route, DynamicRoute, SimpleRouter
+from rest_framework.routers import Route, DynamicRoute, SimpleRouter, DefaultRouter
 
 
 class CartRouter(SimpleRouter):
-    """
-    A router for read-only APIs, which doesn't use trailing slashes.
-    """
+    pass
     routes = [
         Route(
             url=r'^{prefix}{trailing_slash}$',

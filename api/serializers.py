@@ -1,11 +1,6 @@
-if __name__ == '__main__':
-    import os
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'shop.settings'
-    import django
-    django.setup()
 
 from rest_framework import serializers
-from shop.services.сart import CartItem
+from shop.services.сart import CartItem, Cart
 from shop.services.product import Product
 
 
@@ -24,7 +19,7 @@ class UserSerializer(serializers.Serializer):
 class OrderItemSerializer(serializers.Serializer):
     product = ProductSerializer()
     quantity = serializers.IntegerField()
-    price = serializers.FloatField()
+    cart_item_price = serializers.FloatField()
 
 class OrderSerializer(serializers.Serializer):
     user = UserSerializer()
@@ -34,23 +29,29 @@ class OrderSerializer(serializers.Serializer):
 
 
 class CartItemSerializer(serializers.Serializer):
-
+    product = ProductSerializer()
     quantity = serializers.IntegerField()
-    price = serializers.FloatField()
+    cart_item_price = serializers.FloatField()
 
 class CartSerializer(serializers.Serializer):
     cart_items = serializers.SerializerMethodField()
+    total_price = serializers.FloatField()
+    amount_of_items = serializers.IntegerField()
+    has_to_be_shipped = serializers.BooleanField()
 
-    def get_cart_items(self, cart):
+    @staticmethod
+    def get_cart_items(cart: Cart):
         result = []
         for item in cart.get_items():
             serializer = CartItemSerializer(item)
             result.append(serializer.data)
         return result
 
-
-
 if __name__ == '__main__':
+    import os
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'shop.settings'
+    import django
+    django.setup()
     product = Product(sku="1")
     serialize = ProductSerializer(product)
     data = serialize.data

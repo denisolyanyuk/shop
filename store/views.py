@@ -50,7 +50,7 @@ def update_item(request):
 def process_order(request):
     data = json.loads(request.body)
     cart = Cart(user=request.user, session=request.session)
-    if float(data['total']) != cart.get_total_price():
+    if float(data['total']) != cart.total_price:
         return JsonResponse({'message': 'total price is incorrect'}, status=500)
     Order.create_order(user=request.user, cart=cart, data_from_form=data)
     return JsonResponse('order completed', safe=False)

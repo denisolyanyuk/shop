@@ -64,12 +64,13 @@
 					<div style="flex:2"><p>{{item.product.title}}</p></div>
 					<div style="flex:1"><p>${{item.product.price|floatformat:2}}</p></div>
 					<div style="flex:1"><p>x{{item.quantity}}</p></div>
+                    <div style="flex:1"><p>${{item.cart_item_price|floatformat:2}}</p></div>
                 <p>{{item.product.main_image_url}}</p>
 				</div>
 				{% endfor %}
 				<h5>Items:   <span id="items">{{cart.get_amount_of_items}}</span></h5>
 
-				<h5>Total: $<span id="total">{{cart.get_total_price|floatformat:2}}</span></h5>
+				<h5>Total: $<span id="total">{{cart.total_price|floatformat:2}}</span></h5>
 			</div>
 		</div>
 	</div>

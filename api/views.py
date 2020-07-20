@@ -11,19 +11,20 @@ from .serializers import ProductSerializer, CartSerializer
 
 
 class ProductViewSet(viewsets.ViewSet):
+    serializer = ProductSerializer
 
-    def lits(self, request):
-        products = [ProductSerializer(product).data for product in ProductFactory.get_all()]
+    def list(self, request):
+        products = [self.serializer(product).data for product in ProductFactory.get_all()]
         return Response(products)
 
     def retrieve(self, request, pk=None):
         product = ProductFactory.get_product_by_sku(sku=pk)
-        return Response(ProductSerializer(product).data)
+        return Response(self.serializer(product).data)
 
 
 class CartViewSet(viewsets.ViewSet):
     serializer = CartSerializer
-
+    lookup_field = 'sku'
     # def list(self, request):
     #     cart = Cart(user=request.user, session=request.session)
     #     serializer = self.serializer(cart)
@@ -34,8 +35,12 @@ class CartViewSet(viewsets.ViewSet):
     #     serializer = self.serializer(cart)
     #     return Response(serializer.data)
 
+    def list(self, request):
+        cart = Cart(user=request.user, session=request.session)
+        serializer = self.serializer(cart)
+        return Response(serializer.data)
+
     def retrieve(self, request):
-        print('here')
         cart = Cart(user=request.user, session=request.session)
         serializer = self.serializer(cart)
         return Response(serializer.data)

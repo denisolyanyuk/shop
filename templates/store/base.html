@@ -36,6 +36,7 @@
         <a class="navbar-brand" href="{% url 'store' %}">Ecom</a>
         {% if user.is_authenticated and user.is_staff %}
 	        <a class="navbar-brand" href="{% url 'admin:index' %}">Admin</a>
+            <a class="navbar-brand" href="api/">API</a>
         {% endif %}
     </div>
 
@@ -50,7 +51,7 @@
 	     	<a href="{% url 'cart' %}">
 	    		<img id="cart-icon" src="{% get_media_prefix %}cart.png" alt="cart">
 	    	</a>
-	    	<p id="cart-total">{{ cart.get_amount_of_items }}</p>
+	    	<p id="cart-total">{{ cart.amount_of_items }}</p>
 
 	    </div>
 
