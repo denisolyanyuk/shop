@@ -1,8 +1,7 @@
-from rest_framework.routers import Route, DynamicRoute, SimpleRouter, DefaultRouter
+from rest_framework.routers import Route, DynamicRoute, SimpleRouter, DefaultRouter, BaseRouter
 
 
 class CartRouter(SimpleRouter):
-    pass
     routes = [
         Route(
             url=r'^{prefix}{trailing_slash}$',
@@ -29,7 +28,9 @@ class CartRouter(SimpleRouter):
     ]
 
 
-sample_of_routes = [
+class ProductRouter(SimpleRouter):
+    pass
+    routes = [
         # List route.
         Route(
             url=r'^{prefix}{trailing_slash}$',

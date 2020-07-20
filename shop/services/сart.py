@@ -40,7 +40,7 @@ class BaseCartStorage(ABC):
     def get_total_price(self) -> float:
         return sum([item.cart_item_price for item in self.get_items()])
 
-    def get_amount_of_items(self) -> int:
+    def get_quantity_of_items(self) -> int:
         return sum([item.quantity for item in self.get_items()])
 
     @property
@@ -91,11 +91,11 @@ class SessionCartStorage(BaseCartStorage):
             self._storage.pop(sku)
         self._session.save()
 
-    def set_amount_of_items(self, sku: str, amount: int):
-        if amount < 1:
+    def set_quantity_of_items(self, sku: str, quantity: int):
+        if quantity < 1:
             self._storage.pop(sku)
         else:
-            self._storage[sku] = {'quantity': amount}
+            self._storage[sku] = {'quantity': quantity}
         self._session.save()
 
     def clear(self):
@@ -123,7 +123,7 @@ class DBCartStorage(BaseCartStorage):
 
     def add_item(self, sku: str):
         product = ProductModel.objects.get(sku=sku)
-        cart_item, created = CartItemModel.objects.get_or_create(product=product,cart=self._cart_model)
+        cart_item, created = CartItemModel.objects.get_or_create(product=product, cart=self._cart_model)
         cart_item.quantity += 1
         cart_item.save()
 
@@ -136,13 +136,13 @@ class DBCartStorage(BaseCartStorage):
             cart_item.quantity -= 1
             cart_item.save()
 
-    def set_amount_of_items(self, sku: str, amount: int):
+    def set_quantity_of_items(self, sku: str, quantity: int):
         product = ProductModel.objects.get(sku=sku)
         cart_item, created = CartItemModel.objects.get_or_create(product=product, cart=self._cart_model)
-        if amount <= 0:
+        if quantity <= 0:
             cart_item.delete()
         else:
-            cart_item.quantity = amount
+            cart_item.quantity = quantity
             cart_item.save()
 
     def clear(self):
@@ -154,6 +154,7 @@ class Cart:
         if user.is_authenticated:
             self._storage = DBCartStorage(user)
             if 'cart' in session and len(session['cart']) != 0:
+                #TODO: добавить возможность плюсовать cartitems и переписть код снизу
                 session_cart = SessionCartStorage(session)
                 for session_item in session_cart.get_items():
                     sku = session_item.product.sku
@@ -161,7 +162,7 @@ class Cart:
                     db_item = self._storage.get_item_by_sku(sku)
                     if db_item:
                         quantity += db_item.quantity
-                    self._storage.set_amount_of_items(sku, amount=quantity)
+                    self._storage.set_quantity_of_items(sku, quantity=quantity)
                 session_cart.clear()
         else:
             self._storage = SessionCartStorage(session)
@@ -173,7 +174,7 @@ class Cart:
         self._storage.remove_item(sku)
 
     def set_amount_of_items(self, sku: str, amount: int):
-        self._storage.set_amount_of_items(sku, amount)
+        self._storage.set_quantity_of_items(sku, amount)
 
     def get_items(self) -> List[CartItem]:
         return self._storage.get_items()
@@ -186,8 +187,8 @@ class Cart:
         return self._storage.get_total_price()
 
     @property
-    def amount_of_items(self) -> int:
-        return self._storage.get_amount_of_items()
+    def quantity_of_items(self) -> int:
+        return self._storage.get_quantity_of_items()
 
     @property
     def has_to_be_shipped(self) -> bool:

@@ -1,56 +1,56 @@
 from django.shortcuts import render
-from rest_framework import viewsets
-from rest_framework import views
+from rest_framework import viewsets, status
 
 from shop.services.сart import Cart
 from store.models import OrderItemModel
 from rest_framework.decorators import action
 from shop.services.product import Product, ProductFactory
 from rest_framework.response import Response
+from rest_framework.request import Request
 from .serializers import ProductSerializer, CartSerializer
 
 
 class ProductViewSet(viewsets.ViewSet):
     serializer = ProductSerializer
+    lookup_field = 'sku'
 
-    def list(self, request):
+    def list(self, request: Request):
         products = [self.serializer(product).data for product in ProductFactory.get_all()]
         return Response(products)
 
-    def retrieve(self, request, pk=None):
-        product = ProductFactory.get_product_by_sku(sku=pk)
+    def retrieve(self, request: Request, sku=None):
+        product = ProductFactory.get_product_by_sku(sku=sku)
         return Response(self.serializer(product).data)
 
 
 class CartViewSet(viewsets.ViewSet):
     serializer = CartSerializer
-    lookup_field = 'sku'
-    # def list(self, request):
-    #     cart = Cart(user=request.user, session=request.session)
-    #     serializer = self.serializer(cart)
-    #     return Response(serializer.data)
-    #
-    # def retrieve(self, request, format=None):
-    #     cart = Cart(user=request.user, session=request.session)
-    #     serializer = self.serializer(cart)
-    #     return Response(serializer.data)
 
-    def list(self, request):
+    def list(self, request: Request):
         cart = Cart(user=request.user, session=request.session)
         serializer = self.serializer(cart)
         return Response(serializer.data)
 
-    def retrieve(self, request):
-        cart = Cart(user=request.user, session=request.session)
-        serializer = self.serializer(cart)
-        return Response(serializer.data)
+    @action(detail=False, methods=['patch'])
+    def add_item(self, request: Request):
+        cart = Cart(request.user, request.session)
+        cart.add_item(request.data['sku'])
+        return Response({'success': 'item was added'}, status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True)
-    def add_item(self, request, pk):
-        print('here')
-        return Response(ProductSerializer(ProductFactory.get_product_by_sku('1')).data)
+    @action(detail=False, methods=['patch'])
+    def remove_item(self, request: Request):
+        cart = Cart(request.user, request.session)
+        cart.remove_item(request.data['sku'])
+        return Response({'success': 'item was removed'}, status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False)
-    def clear_cart(self, request):
-        print('here')
-        return Response(ProductSerializer(ProductFactory.get_product_by_sku('1')).data)
+    @action(detail=False, methods=['patch'])
+    def set_amount_of_items(self, request: Request):
+        cart = Cart(request.user, request.session)
+        cart.set_amount_of_items(sku=request.data['sku'], amount=request.data['amount'])
+        return Response({'success': 'item was set'}, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['patch'])
+    def clear_cart(self, request: Request):
+        cart = Cart(request.user, request.session)
+        cart.clear()
+        return Response({'success': 'cart was cleared'}, status=status.HTTP_204_NO_CONTENT)
