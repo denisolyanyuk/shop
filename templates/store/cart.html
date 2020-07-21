@@ -12,7 +12,7 @@
 				<br>
 				<table class="table">
 					<tr>
-						<th><h5>Items: <strong>{{cart.get_amount_of_items}}</strong></h5></th>
+						<th><h5>Items: <strong>{{cart.quantity_of_items}}</strong></h5></th>
 						<th><h5>Total:<strong> ${{cart.total_price|floatformat:2}}</strong></h5></th>
 						<th>
 							<a  style="float:right; margin:5px;" class="btn btn-success" href="{% url 'checkout' %}">Checkout</a>
@@ -41,9 +41,9 @@
 					<div style="flex:1">
 						<p class="quantity">{{item.quantity}}</p>
 						<div class="quantity">
-							<img data-SKU="{{item.product.sku}}" data-action="add" class="chg-quantity update-cart" src="{% get_media_prefix %}arrow-up.png">
+							<img data-SKU="{{item.product.sku}}" data-action="add_item" class="chg-quantity update-cart" src="{% get_media_prefix %}arrow-up.png">
 
-							<img data-SKU="{{item.product.sku}}" data-action="remove" class="chg-quantity update-cart" src="{% get_media_prefix %}arrow-down.png">
+							<img data-SKU="{{item.product.sku}}" data-action="remove_item" class="chg-quantity update-cart" src="{% get_media_prefix %}arrow-down.png">
 						</div>
 					</div>
 					<div style="flex:1"><p>${{item.cart_item_price|floatformat:2}}</p></div>

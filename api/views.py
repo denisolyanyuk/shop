@@ -8,7 +8,7 @@ from shop.services.product import Product, ProductFactory
 from rest_framework.response import Response
 from rest_framework.request import Request
 from .serializers import ProductSerializer, CartSerializer
-
+import json
 
 class ProductViewSet(viewsets.ViewSet):
     serializer = ProductSerializer
@@ -30,6 +30,11 @@ class CartViewSet(viewsets.ViewSet):
         cart = Cart(user=request.user, session=request.session)
         serializer = self.serializer(cart)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def quantity_of_items(self, request: Request):
+        cart = Cart(request.user, request.session)
+        return Response({'total_quantity': cart.quantity_of_items}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['patch'])
     def add_item(self, request: Request):

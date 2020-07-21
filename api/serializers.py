@@ -36,7 +36,7 @@ class CartItemSerializer(serializers.Serializer):
 class CartSerializer(serializers.Serializer):
     cart_items = serializers.SerializerMethodField()
     total_price = serializers.FloatField()
-    amount_of_items = serializers.IntegerField()
+    quantity_of_items = serializers.IntegerField()
     has_to_be_shipped = serializers.BooleanField()
 
     @staticmethod
