@@ -1,13 +1,12 @@
-
+import {Cart} from './cart.js';
+const cart = new Cart()
 const updateBtns = Array.from(document.getElementsByClassName('update-cart'));
 
 
 updateBtns.map(elem => elem.addEventListener('click', async function () {
-
-    const sku = this.dataset.sku;
-    const action = this.dataset.action;
-    await updateItem(sku, action)
-    await updateCartInNavBar()
+    await cart.updateItem(this.dataset.sku, this.dataset.action)
+    let data = await cart.getItems()
+    console.log(data)
 }))
 
 async function updateCartInNavBar() {
@@ -28,22 +27,3 @@ async function updateCartInNavBar() {
 
 }
 
-async function updateItem(sku, action) {
-    const url = `${location.protocol}//${location.host}/api/cart/${action}/`;
-    let csrfToken = (window.user==="AnonymousUser") ?
-        document.querySelector('[name="csrfmiddlewaretoken"]').value:
-        getCookie('csrftoken');
-
-    const response = await fetch(url, {
-        method:'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken':csrfToken,
-        },
-        body: JSON.stringify({
-            'sku': sku,
-        }),
-    })
-    await response
-
-}

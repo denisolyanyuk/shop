@@ -27,7 +27,7 @@ from shop import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls'), ),
-    path('api/', include('api.urls')),
+    path('api/', include('api.urls', namespace='api')),
     path('', include('store.urls')),
 ]
 

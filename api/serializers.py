@@ -9,6 +9,7 @@ class ProductSerializer(serializers.Serializer):
     title = serializers.CharField()
     sku = serializers.CharField()
     is_digital = serializers.BooleanField()
+    main_image = serializers.ImageField()
 
 
 class UserSerializer(serializers.Serializer):
