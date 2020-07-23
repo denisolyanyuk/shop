@@ -51,7 +51,11 @@ export class PageWorker {
     _createCartItemRow(item) {
         let row = document.createElement('div')
         row.className = 'cart-row'
-        let image = document.createElement('')
+        let imageDiv = document.createElement('div')
+        imageDiv.className = 'col-sm'
+        let image = document.createElement('img')
+        image.className = "row-image"
+    <img class="row-image" src=" {{ item.product.main_image.url }}">
 
     }
 }
