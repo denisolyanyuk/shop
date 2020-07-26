@@ -16,12 +16,10 @@ class Product:
         self.sku = self.model.sku
         self.is_digital = self.model.is_digital
 
-
-class ProductFactory:
-    @staticmethod
-    def get_product_by_sku(sku: str) -> Product:
+    @classmethod
+    def get_product_by_sku(cls, sku: str) -> 'Product':
         return Product(sku=sku)
 
-    @staticmethod
-    def get_all() -> List[Product]:
+    @classmethod
+    def get_all(cls) -> List['Product']:
         return [Product(model=model) for model in ProductModel.objects.all()]

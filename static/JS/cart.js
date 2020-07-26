@@ -10,7 +10,7 @@ export class Cart {
     }
 
     async getItems(){
-        let data = await this._request('GET')
+        const data = await this._request('GET')
         return data.json()
     }
 

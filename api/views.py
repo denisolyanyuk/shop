@@ -4,7 +4,7 @@ from rest_framework import viewsets, status
 from shop.services.сart import Cart
 from store.models import OrderItemModel
 from rest_framework.decorators import action
-from shop.services.product import Product, ProductFactory
+from shop.services.product import Product
 from rest_framework.response import Response
 from rest_framework.request import Request
 from .serializers import ProductSerializer, CartSerializer
@@ -15,11 +15,11 @@ class ProductViewSet(viewsets.ViewSet):
     lookup_field = 'sku'
 
     def list(self, request: Request):
-        products = [self.serializer(product).data for product in ProductFactory.get_all()]
+        products = [self.serializer(product).data for product in Product.get_all()]
         return Response(products)
 
     def retrieve(self, request: Request, sku=None):
-        product = ProductFactory.get_product_by_sku(sku=sku)
+        product = Product.get_product_by_sku(sku=sku)
         return Response(self.serializer(product).data)
 
 

@@ -8,12 +8,18 @@ class Order:
     @staticmethod
     def create_order(cart: Cart, user: User, data_from_form: dict):
         transaction_id = datetime.datetime.now().timestamp()
-        order = OrderModel.objects.create(user=user, transaction_id=transaction_id, date_time=datetime.datetime.now())
+        order = OrderModel.objects.create(
+            user=user,
+            transaction_id=transaction_id,
+            date_time=datetime.datetime.now()
+        )
         for cart_item in cart.get_items():
-            OrderItemModel.objects.create(product=cart_item.product,
-                                          order=order,
-                                          quantity=cart_item.quantity,
-                                          price=cart_item.price)
+            OrderItemModel.objects.create(
+                product=cart_item.product,
+                order=order,
+                quantity=cart_item.quantity,
+                price=cart_item.cart_item_price
+            )
         if cart.has_to_be_shipped:
             ShippingAddressModel.objects.create(
                 customer=user,

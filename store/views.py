@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from shop.services.сart import Cart
 from shop.services.order import Order
-from shop.services.product import ProductFactory
+from shop.services.product import Product
 from django.http import Http404, HttpResponseServerError, HttpResponseBadRequest
 from django.http import JsonResponse
 import json
@@ -17,7 +17,7 @@ def cart(request):
 
 def store(request):
     cart = Cart(user=request.user, session=request.session)
-    products = ProductFactory.get_all()
+    products = Product.get_all()
     context = {
         'cart': cart,
         'products': products,
@@ -61,7 +61,12 @@ def product_details(request, sku=''):
     if sku == '':
         raise Http404("Product does not exist")
     context = {
-        'product': ProductFactory.get_product_by_sku(sku=sku),
+        'product': Product.get_product_by_sku(sku=sku),
         'cart': cart,
     }
     return render(request, 'store/product_details.html', context)
+
+
+def test(request):
+
+    return render(request, 'test.html')
