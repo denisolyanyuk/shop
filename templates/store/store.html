@@ -10,7 +10,7 @@
                 <div class="box-element product">
                     <h6><strong>{{ product.title }}</strong></h6>
                     <hr>
-                    <button data-SKU="{{product.sku}}" data-action="add_item" class="btn btn-outline-secondary add-btn update-cart">Add to Cart</button>
+                    <button data-sku="{{product.sku}}" data-cart-action="addItem" class="btn btn-outline-secondary add-btn update-cart">Add to Cart</button>
                     <a class="btn btn-outline-success" href="{% url 'product_details' sku=product.sku%}">View</a>
                     <h4 style="display: inline-block; float: right"><strong>${{product.price|floatformat:2}}</strong></h4>
                 </div>
@@ -18,8 +18,21 @@
             </div>
         {% endfor %}
     </div>
+<div class="pagination">
+    <span class="step-links">
+        {% if products.has_previous %}
+            <a href="?page={{products.previous_page_number}}">Previous</a>
+        {% endif %}
+        <span class="current">
+            Page {{ products.number }} of {{ paginator.num_pages }}
+        </span>
+        {% if products.has_next %}
+            <a href="?page={{ products.next_page_number }}">Next</a>
+        {% endif %}
+    </span>
+</div>
 {% endblock %}
 
 {% block scripts %}
-    <script type="module" src={% static 'JS/add_or_remove_item_to_cart.js' %}></script>
+    <script type="module" src={% static 'JS/cart.js' %}></script>
 {% endblock %}

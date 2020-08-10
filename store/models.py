@@ -16,8 +16,11 @@ class ProductModel(models.Model):
     price = models.FloatField()
     main_image = models.ImageField(upload_to=get_image_subdirectory_for_item_images)
     title = models.CharField(max_length=50)
-    sku = models.CharField(max_length=20, unique=True)
+    sku = models.CharField(max_length=20, unique=True, primary_key=True)
     is_digital = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.title
 
 
 class ProductImagesModel(models.Model):
@@ -39,13 +42,21 @@ class OrderItemModel(models.Model):
 
 
 class CartModel(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(User, related_name="cart", on_delete=models.SET_NULL, null=True,
+                             # blank=True
+                             )
+
+    def __str__(self):
+        return self.user.email
 
 
 class CartItemModel(models.Model):
-    product = models.ForeignKey(ProductModel, on_delete=models.CASCADE, related_name="cart_items", default=None,
-                                blank=True)
-    cart = models.ForeignKey(CartModel, on_delete=models.CASCADE, related_name="cart_items", default=None, blank=True)
+    product = models.ForeignKey(ProductModel, on_delete=models.CASCADE, related_name="cart_items",
+                                # default=None, blank=True
+                                )
+    cart = models.ForeignKey(CartModel, on_delete=models.CASCADE, related_name="cart_items",
+                             # default=None, blank=True
+                             )
     quantity = models.IntegerField(default=0)
 
 

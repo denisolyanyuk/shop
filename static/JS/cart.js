@@ -4,18 +4,65 @@ export class Cart {
         document.querySelector('[name="csrfmiddlewaretoken"]').value :
         getCookie('csrftoken');
 
-
-    async updateItem(sku, action) {
-        await this._request('PATCH', action+'/', {'sku':sku})
+    constructor(elem) {
+      this._elem = elem;
+      elem.addEventListener('click', this.onClick.bind(this))
     }
 
-    async getItems(){
-        const data = await this._request('GET')
-        return data.json()
+    onClick(event) {
+        let action = event.target.dataset.cartAction;
+        if (action) {
+            const sku = event.target.dataset.sku
+            this[action](sku);
+        }
+    }
+
+    async addItem(sku) {
+        const response = await this._request('POST', 'add_item', {'sku':sku})
+        const jsonResponse = await response.json()
+        const cartInfo = jsonResponse['data']['cart']
+        let cartItem = this._getCartItemBySku(sku,cartInfo)
+        this._refreshCartItemRow(cartItem, sku)
+        this._refreshCartInfo(cartInfo)
+    }
+
+    async removeItem(sku) {
+        const response = await this._request('POST', 'remove_item', {'sku': sku})
+        const jsonResponse = await response.json()
+        const cartInfo = jsonResponse['data']['cart']
+        let cartItem = this._getCartItemBySku(sku,cartInfo)
+        this._refreshCartItemRow(cartItem, sku)
+        this._refreshCartInfo(cartInfo)
+    }
+
+    _refreshCartItemRow(cartItem, sku) {
+        const row = document.querySelector(`div[class*="cart-row"][data-sku="${sku}"]`)
+        if (row) {
+            if (cartItem) {
+                row.querySelector('div[class*="quantity-column"]>p').textContent  = cartItem['quantity']
+                row.querySelector('div[class*="item-price-column"]>[class="item-price"]').textContent  = cartItem['cart_item_price']
+            } else {
+                row.remove()
+            }
+        }
+
+    }
+
+    _refreshCartInfo(cartInfo) {
+        document.querySelectorAll('[class*=total-quantity-of-items]').forEach(elem=> elem.textContent = cartInfo['quantity_of_items'])
+        document.querySelectorAll('[class*=total-price]').forEach(elem=> elem.textContent = cartInfo['total_price'])
+    }
+
+    _getCartItemBySku(sku, cartInfo) {
+        for (let item of cartInfo['cart_items']) {
+            if (item['product']['sku'] === sku) {
+                return item
+            }
+        }
     }
 
     _request (method, url='', body='') {
-        let params = {
+        const params = {
             method:method,
             headers: {
                 'Content-Type': 'application/json',
@@ -25,37 +72,9 @@ export class Cart {
             params['body'] = JSON.stringify(body);
         }
 
-        return  fetch(this.baseUrl +url, params)
-
+        return  fetch(this.baseUrl +url+'/', params)
     }
 
 }
 
-
-export class PageWorker {
-    #mediaDir = ''
-    refreshCartItemsAmountInNavBar(amount){
-        const cartTotalElem = document.getElementById('"cart-total-items"');
-        cartTotalElem.innerHTML = amount
-    }
-
-    refreshCartItemsInCart(items){
-        const container = document.getElementById('cart-rows-container')
-
-        items.forEach((elem) => {
-
-
-        })
-    }
-
-    _createCartItemRow(item) {
-        let row = document.createElement('div')
-        row.className = 'cart-row'
-        let imageDiv = document.createElement('div')
-        imageDiv.className = 'col-sm'
-        let image = document.createElement('img')
-        image.className = "row-image"
-    <img class="row-image" src=" {{ item.product.main_image.url }}">
-
-    }
-}
+new Cart(document.body)

@@ -2,9 +2,11 @@ from django.shortcuts import render
 from shop.services.сart import Cart
 from shop.services.order import Order
 from shop.services.product import Product
+from shop.services.paginator import Paginator
 from django.http import Http404, HttpResponseServerError, HttpResponseBadRequest
 from django.http import JsonResponse
 import json
+
 
 
 def cart(request):
@@ -17,10 +19,15 @@ def cart(request):
 
 def store(request):
     cart = Cart(user=request.user, session=request.session)
-    products = Product.get_all()
+    product_list = Product.get_all()
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(product_list, 3)
+    products = paginator.page(page_number)
     context = {
         'cart': cart,
         'products': products,
+        'page': page_number,
+        'paginator': paginator
     }
     return render(request, 'store/store.html', context)
 

@@ -1,11 +1,20 @@
-from abc import ABC, abstractmethod
+
+import datetime
+import time
+from pprint import pprint
+
+from django.db.models import Prefetch
+
+if __name__ == '__main__':
+    import django
+    django.setup()
+
 
 from django.core.exceptions import ObjectDoesNotExist
-
 from store.models import CartModel, CartItemModel, ProductModel
 from users.models import User
-from .product import ProductFactory, Product
-from django.contrib.sessions.backends.db import SessionBase
+from shop.services.product import Product
+from django.contrib.sessions.backends.db import SessionBase, SessionStore
 from typing import List, Union
 
 
@@ -39,7 +48,7 @@ class SessionCartStorage:
     def get_items(self) -> List[CartItem]:
         result = []
         for sku, item in self._storage.items():
-            product = ProductFactory.get_product_by_sku(sku)
+            product = Product.get_product_by_sku(sku)
             result.append(CartItem(
                 product=product,
                 quantity=item['quantity']
@@ -48,7 +57,7 @@ class SessionCartStorage:
 
     def get_item_by_sku(self, sku: str) -> Union[CartItem, None]:
         if sku in self._storage:
-            product = ProductFactory.get_product_by_sku(sku)
+            product = Product.get_product_by_sku(sku)
             quantity = self._storage[sku]['quantity']
             return CartItem(product=product, quantity=quantity)
         else:
@@ -81,7 +90,12 @@ class SessionCartStorage:
 
 class DBCartStorage:
     def __init__(self, user):
-        self._cart_model, created = CartModel.objects.get_or_create(user=user)
+        if CartModel.objects.filter(user=user).exists():
+            cart_model = CartModel.objects.get(user=user)
+            self._cart_model = cart_model
+            self._query_cart_items = CartItemModel.objects.filter(cart=cart_model).select_related('cart', "product")
+        else:
+            self._cart_model = CartModel.objects.create(user=user)
         self._user = user
 
     def __contains__(self, item: CartItem):
@@ -91,39 +105,36 @@ class DBCartStorage:
         return [CartItem(
             product=model.product,
             quantity=model.quantity)
-            for model in self._cart_model.cart_items.all()]
+            for model in self._query_cart_items.all()]
 
     def get_item_by_sku(self, sku: str) -> Union[CartItem, None]:
         try:
-            product = ProductModel.objects.get(sku=sku)
-            cart_item = CartItemModel.objects.get(product=product, cart=self._cart_model)
-            return CartItem(product=product, quantity=cart_item.quantity)
+
+            cart_item = self._query_cart_items.get(product=sku)
+            return CartItem(product=cart_item.product, quantity=cart_item.quantity)
         except ObjectDoesNotExist:
             return None
 
     def add_item(self, sku: str, quantity: int):
-        product = ProductModel.objects.get(sku=sku)
-        cart_item, created = CartItemModel.objects.get_or_create(product=product, cart=self._cart_model)
+        cart_item, created = self._query_cart_items.get_or_create(product=sku)
         cart_item.quantity += quantity
-        cart_item.save()
+        cart_item.save(update_fields=['quantity'])
 
     def remove_item(self, sku: str):
-        product = ProductModel.objects.get(sku=sku)
-        cart_item, created = CartItemModel.objects.get_or_create(product=product, cart=self._cart_model)
+        cart_item, created = self._cart_model.cart_items.get_or_create(product=sku)
         if cart_item.quantity <= 1:
             cart_item.delete()
         else:
             cart_item.quantity -= 1
-            cart_item.save()
+            cart_item.save(update_fields=['quantity'])
 
     def set_quantity_of_items(self, sku: str, quantity: int):
-        product = ProductModel.objects.get(sku=sku)
-        cart_item, created = CartItemModel.objects.get_or_create(product=product, cart=self._cart_model)
+        cart_item, created = self._cart_model.cart_items.get_or_create(product=sku)
         if quantity <= 0:
             cart_item.delete()
         else:
             cart_item.quantity = quantity
-            cart_item.save()
+            cart_item.save(update_fields=['quantity'])
 
     def clear(self):
         self._cart_model.cart_items.all().delete()
@@ -172,6 +183,23 @@ class Cart:
 
     def clear(self):
         self._storage.clear()
+
+
+if __name__ == '__main__':
+    from django.db import connection, reset_queries
+    user = User.objects.get(email="denisolyanyuk@gmail.com")
+    session = SessionStore()
+    cart = Cart(user=user, session=session)
+    reset_queries()
+    start = time.perf_counter()
+    cart.add_item("2")
+    end = time.perf_counter()
+    pprint(connection.queries)
+    print(f"Finished in : {(end - start):.3f}s")
+
+
+
+
 
 
 

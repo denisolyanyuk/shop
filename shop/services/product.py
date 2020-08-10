@@ -16,6 +16,8 @@ class Product:
         self.sku = self.model.sku
         self.is_digital = self.model.is_digital
 
+
+
     @classmethod
     def get_product_by_sku(cls, sku: str) -> 'Product':
         return Product(sku=sku)

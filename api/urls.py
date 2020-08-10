@@ -10,7 +10,7 @@ router = DefaultRouter()
 router.register(r'products', ProductViewSet, basename='products')
 router.register(r'cart', CartViewSet, basename='cart')
 
-print(router.urls)
+
 urlpatterns = [
     path(r'', include(router.urls)),
 ]
